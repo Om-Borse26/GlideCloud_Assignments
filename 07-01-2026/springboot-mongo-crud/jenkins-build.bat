@@ -41,9 +41,9 @@ if not defined PREV_SHA (
   set /a DIFF_COUNT=0
   for /f "usebackq delims=" %%L in ("%DIFF_FILE%") do set /a DIFF_COUNT+=1
 
-  if %DIFF_COUNT% GTR 0 (
+  if !DIFF_COUNT! GTR 0 (
     set "CHANGES_FOUND=1"
-    echo Changes detected in project: %DIFF_COUNT% file^(s^)
+    echo Changes detected in project: !DIFF_COUNT! file^(s^)
     type "%DIFF_FILE%"
   ) else (
     echo No changes detected in this project folder. Skipping build and push.
