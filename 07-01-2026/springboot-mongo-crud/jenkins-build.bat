@@ -1,13 +1,13 @@
 @echo off
 setlocal enabledelayedexpansion
 
-REM Resolve to the script's directory (project root)
+REM Work from the script directory
 pushd "%~dp0"
 
 REM Settings
 set "IMAGE_NAME=omborse1618/springboot_crud_ops"
 
-REM Infer branch tag from Jenkins; fallback to main
+REM Derive branch tag from Jenkins, fallback to main
 set "TAG_BRANCH=%GIT_BRANCH%"
 if "%TAG_BRANCH%"=="" set "TAG_BRANCH=main"
 set "TAG_BRANCH=%TAG_BRANCH:origin/=%"
@@ -30,64 +30,38 @@ if defined PREV_SHA (
   echo Previous: ^(none^) - first run will build
 )
 
-REM Detect changes in this project directory only
+REM Detect changes limited to this directory
 set "DIFF_FILE=%TEMP%\jenkins_diff_%RANDOM%.txt"
-set "CHANGES_FOUND=0"
 
 if not defined PREV_SHA (
-  set "CHANGES_FOUND=1"
+  set "DIFF_COUNT=1"
 ) else (
   git diff --name-status --diff-filter=ACDMR "%PREV_SHA%" "%CURRENT_SHA%" -- . > "%DIFF_FILE%"
   set /a DIFF_COUNT=0
   for /f "usebackq delims=" %%L in ("%DIFF_FILE%") do set /a DIFF_COUNT+=1
-
-  if !DIFF_COUNT! GTR 0 (
-    set "CHANGES_FOUND=1"
-    echo Changes detected in project: !DIFF_COUNT! file^(s^)
-    type "%DIFF_FILE%"
-  ) else (
-    echo No changes detected in this project folder. Skipping build and push.
-    del /q "%DIFF_FILE%" 2>nul
-    popd
-    exit /b 0
-  )
 )
 
-del /q "%DIFF_FILE%" 2>nul
-
-REM Build Spring Boot JAR
-echo Building application JAR...
-if exist gradlew.bat (
-  call gradlew.bat --no-daemon clean bootJar -x test
+if !DIFF_COUNT! GTR 0 (
+  echo Changes detected in project: !DIFF_COUNT! file^(s^)
+  if exist "%DIFF_FILE%" type "%DIFF_FILE%"
 ) else (
-  echo gradlew.bat not found in script directory. 1>&2
+  echo No changes detected in this project folder. Skipping image build and push.
+  if exist "%DIFF_FILE%" del /q "%DIFF_FILE%" 2>nul
   popd
-  exit /b 1
-)
-if errorlevel 1 (
-  echo Gradle build failed. 1>&2
-  popd
-  exit /b 1
+  exit /b 0
 )
 
-REM Pick the non-plain jar
-set "JAR_NAME="
-for /f "delims=" %%j in ('dir /b build\libs ^| findstr /i /r "\.jar$" ^| findstr /i /v "plain"') do set "JAR_NAME=%%j"
-if "%JAR_NAME%"=="" (
-  echo Jar not found in build\libs. 1>&2
-  popd
-  exit /b 1
-)
+if exist "%DIFF_FILE%" del /q "%DIFF_FILE%" 2>nul
 
 REM Build and push Docker image
-echo Building Docker image %IMAGE_NAME%:%CURRENT_SHA% and %IMAGE_NAME%:%TAG_BRANCH% ...
-if exist Dockerfile (
-  docker build -t %IMAGE_NAME%:%CURRENT_SHA% -t %IMAGE_NAME%:%TAG_BRANCH% -f Dockerfile .
-) else (
+if not exist Dockerfile (
   echo Dockerfile not found in script directory. 1>&2
   popd
   exit /b 1
 )
+
+echo Building Docker image %IMAGE_NAME%:%CURRENT_SHA% and %IMAGE_NAME%:%TAG_BRANCH% ...
+docker build -t %IMAGE_NAME%:%CURRENT_SHA% -t %IMAGE_NAME%:%TAG_BRANCH% -f Dockerfile .
 if errorlevel 1 (
   echo Docker build failed. 1>&2
   popd
