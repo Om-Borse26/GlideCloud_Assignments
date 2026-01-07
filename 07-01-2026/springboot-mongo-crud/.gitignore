@@ -73,11 +73,5 @@ Thumbs.db
 mvnw
 mvnw.cmd
 
-# Gradle
-.gradle/
-gradle/
-gradlew
-gradlew.bat
-
 # Environment variables (NEVER commit these)
 .env
