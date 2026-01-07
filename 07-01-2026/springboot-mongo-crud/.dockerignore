@@ -1,7 +1,6 @@
 # '.dockerignore'
 .git
 .gitignore
-.gradle
 build
 out
 .idea
