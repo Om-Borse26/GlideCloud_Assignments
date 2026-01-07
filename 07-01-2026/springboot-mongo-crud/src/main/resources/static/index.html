@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring Boot MongoDB CRUD</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>🚀 User Management System</h1>
+        <p>Spring Boot + MongoDB CRUD Application</p>
+    </header>
+
+    <!-- Add User Form -->
+    <div class="form-container">
+        <h2 id="form-title">Add New User</h2>
+        <form id="userForm">
+            <input type="hidden" id="userId">
+
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" required placeholder="Enter name">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required placeholder="Enter email">
+            </div>
+
+            <div class="form-group">
+                <label for="age">Age</label>
+                <input type="number" id="age" required placeholder="Enter age" min="1" max="150">
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary" id="submitBtn">Add User</button>
+                <button type="button" class="btn btn-secondary" id="cancelBtn" style="display: none;">Cancel</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Users List -->
+    <div class="users-container">
+        <div class="users-header">
+            <h2>Users List</h2>
+            <button class="btn btn-refresh" onclick="loadUsers()">🔄 Refresh</button>
+        </div>
+        <div id="usersList">
+            <div class="empty-state">
+                <p>Loading users...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
