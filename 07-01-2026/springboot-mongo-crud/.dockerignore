@@ -1,10 +1,22 @@
-# '.dockerignore'
+# .dockerignore
+
+# Common ignores
 .git
 .gitignore
-build
-out
 .idea
-*.iml
-Dockerfile
-docker-compose.yml
-.env
+.vscode
+**/build/
+**/.gradle/
+build/
+.gradle/
+
+# If you ignore jars elsewhere, make sure the wrapper JAR is kept
+*.jar
+!gradle/
+!gradle/wrapper/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# Keep the wrapper scripts
+!gradlew
+!gradlew.bat
