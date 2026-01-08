@@ -1,6 +1,7 @@
 # User Management — Full Stack (Spring Boot + MongoDB + React/Vite)
 
 ![React UI](Images/React_UI.png)
+![React UI](Images/React_Server.png)
 
 A minimal full‑stack CRUD app: Spring Boot + MongoDB backend and React (Vite) frontend.
 
