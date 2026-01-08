@@ -80,7 +80,7 @@ export default defineConfig(({ mode }) => {
       port,
       proxy: {
         '/api': {
-          target: 'http://localhost:8081',
+          target: 'http://localhost:your port number of springboot application',
           changeOrigin: true,
           secure: false
         }
