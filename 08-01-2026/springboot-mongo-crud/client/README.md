@@ -1,6 +1,6 @@
 # User Management — React Client
 
-![React UI](Images/React_UI.png)
+![React UI](../Images/React_UI.png)
 
 A minimal React front‑end for managing users with create, read, update, and delete (CRUD) operations.
 
