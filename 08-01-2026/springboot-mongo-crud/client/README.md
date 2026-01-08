@@ -1,16 +1,53 @@
-# React + Vite
+# User Management — React Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![React UI](Images/React_UI.png)
 
-Currently, two official plugins are available:
+A minimal React front‑end for managing users with create, read, update, and delete (CRUD) operations.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
+- Add users with name, email, and age
+- View users with a running count
+- Edit and delete existing users
+- Simple form validation and clean dark UI
 
-## React Compiler
+## Tech
+- React (Vite or CRA)
+- Fetch/Axios via `client/src/services/api.js`
+- CSS framework or custom styles
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Prerequisites
+- Node.js 18+ and npm
 
-## Expanding the ESLint configuration
+## Setup
+1. `cd client`
+2. Install deps: `npm install`
+3. Configure API base URL:
+    - Create `.env` in `client/`
+    - Use one of:
+        - `VITE_API_URL=http://localhost:5000/api`
+        - `REACT_APP_API_URL=http://localhost:5000/api`
+    - Ensure `client/src/services/api.js` reads the same variable.
+4. Start dev server:
+    - Vite: `npm run dev`
+    - CRA: `npm start`
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Scripts
+- Dev: `npm run dev` or `npm start`
+- Build: `npm run build`
+- Test: `npm test`
+
+## Expected API
+- `GET /users` — list users
+- `POST /users` — add user
+- `PUT /users/:id` — update user
+- `DELETE /users/:id` — remove user
+
+## Project Structure (client)
+- `src/components/` — UI components
+- `src/services/api.js` — API client
+- `src/App.jsx` — app shell
+- `src/index.jsx` — entry point
+
+## Notes
+- Place `react_ui.png` alongside this file or adjust the image path above.
+- Update CORS on the server if accessing from a different origin.
