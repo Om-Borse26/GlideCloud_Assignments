@@ -1,137 +1,186 @@
-# User Management — Full Stack (Spring Boot + MongoDB + React/Vite)
+# User Management — Spring Boot + MongoDB + React (Vite) + Kafka (Multi-Instance Demo)
+
+A full-stack CRUD application with:
+
+- Spring Boot REST API + MongoDB persistence
+- React (Vite) UI
+- Kafka integration to demonstrate cross-server event propagation when the same Spring Boot app runs as two instances (8081 + 8082)
+
+## Screenshots
+
+### React UI
 
 ![React UI](Images/React_UI.png)
-![React UI](Images/React_Server.png)
+![React UI + Server](Images/React_Server.png)
 
-A minimal full‑stack CRUD app: Spring Boot + MongoDB backend and React (Vite) frontend.
+### Swagger / API
 
-## Stack
-- Backend: Java, Spring Boot, MongoDB, Gradle
-- Frontend: React 18, Vite, Axios
-- Dev tools: Node.js, npm
+![Swagger](Images/Swagger.png)
 
-## Repository Structure
-~~~text
+### Kafka Demo
+
+![Kafka Demo 1](Images/Kafka1.png)
+![Kafka Demo 2](Images/Kafka2.png)
+![Kafka Demo 3](Images/Kafka3.png)
+![Kafka Demo 4](Images/Kafka4.png)
+
+### Docker
+
+![Docker](Images/Docker.png)
+
+## What this project demonstrates
+
+### Standard CRUD
+
+The backend exposes `/api/users` endpoints to create, read, update, and delete users stored in MongoDB.
+
+### Kafka cross-server events (8081 ↔ 8082)
+
+When you run the same Spring Boot app twice (server1 on 8081 and server2 on 8082), each instance:
+
+- publishes Kafka events after CRUD writes (created/updated/deleted)
+- consumes events produced by the other instance
+- forwards those remote events to the browser using Server-Sent Events (SSE)
+
+This is useful to visualize how Kafka helps distribute events across multiple running instances without them calling each other directly.
+
+## Repository structure
+
+```text
 .
+├─ src/                     # Spring Boot backend
 ├─ client/                  # React (Vite) frontend
-├─ src/                     # Spring Boot sources
-├─ build.gradle / gradlew   # Gradle build files
-├─ Images/React_UI.png      # UI screenshot
-└─ Readme.md                # This file
-~~~
+├─ docker-compose.yml       # MongoDB + Kafka + Zookeeper
+├─ build.gradle / gradlew   # Gradle build
+└─ Images/                  # Screenshots used in this README
+```
 
 ## Prerequisites
-- Java 17\+
-- Node.js 18\+ and npm
-- MongoDB running locally (or a connection URI)
 
-## Backend (Spring Boot)
-You can configure via env vars or properties.
+- Java 21 (as configured in Gradle toolchain)
+- Node.js 18+ and npm
+- Docker Desktop (recommended for MongoDB + Kafka)
 
-- Option A — Environment variables (PowerShell):
-~~~powershell
-# From project root
-$env:SERVER_PORT="8081"
-$env:SPRING_DATA_MONGODB_URI="mongodb://localhost:27017/userdb"
-.\gradlew bootRun
-~~~
+## Quick start (recommended: Docker for Mongo + Kafka)
 
-- Option B — Properties file:
-  Edit `src/main/resources/application.properties`:
-~~~properties
-server.port=8081
-spring.data.mongodb.uri=mongodb://localhost:27017/userdb
-~~~
+From the project root:
 
-Then run:
-~~~powershell
-.\gradlew bootRun
-~~~
+```powershell
+docker-compose up -d
+```
 
-The API will be available at `http://localhost:8081`.
+This starts:
 
-## Frontend (React + Vite)
-1. Install dependencies:
-~~~powershell
+- MongoDB on `localhost:27017`
+- Kafka on `localhost:9092`
+- Zookeeper on `localhost:2181`
+
+## Run the backend (single instance)
+
+If you only want one backend instance:
+
+```powershell
+./gradlew bootRun
+```
+
+Then open:
+
+- API base: `http://localhost:8081`
+- Swagger UI: `http://localhost:8081/swagger-ui.html`
+
+## Run the Kafka multi-instance demo (two backend instances)
+
+Start the two Spring Boot instances using profiles.
+
+Terminal 1 (Server 1 on 8081):
+
+```powershell
+./gradlew bootRun --args='--spring.profiles.active=server1'
+```
+
+Terminal 2 (Server 2 on 8082):
+
+```powershell
+./gradlew bootRun --args='--spring.profiles.active=server2'
+```
+
+Profile configs:
+
+- `src/main/resources/application-server1.properties` (port 8081, Kafka group for server1)
+- `src/main/resources/application-server2.properties` (port 8082, Kafka group for server2)
+
+## Run the frontend (React + Vite)
+
+```powershell
 cd client
 npm install
-~~~
-
-2. Dev environment variables:
-   Create `client/.env.development`:
-~~~ini
-VITE_APP_NAME=User Management UI
-VITE_API_BASE=/api
-VITE_DEV_PORT=5173
-~~~
-
-3. Vite dev server with proxy:
-   Ensure `client/vite.config.js` has a proxy to the backend:
-~~~javascript
-import { defineConfig, loadEnv } from 'vite'
-import react from '@vitejs/plugin-react'
-
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '')
-  const port = Number(env.VITE_DEV_PORT ?? 5173)
-  return {
-    plugins: [react()],
-    server: {
-      port,
-      proxy: {
-        '/api': {
-          target: 'http://localhost:your port number of springboot application',
-          changeOrigin: true,
-          secure: false
-        }
-      }
-    }
-  }
-})
-~~~
-
-4. Start the frontend:
-~~~powershell
 npm run dev
-~~~
-Open `http://localhost:5173`. Use API calls like `GET /api/users` so the proxy forwards to the backend.
+```
 
-## Production Builds
-- Backend:
-~~~powershell
-.\gradlew build
-~~~
+Typical dev URL: `http://localhost:5173`
 
-- Frontend:
-~~~powershell
-cd client
-npm run build
-# Output in client/dist
-~~~
+### Vite proxy note
 
-Optional preview of the built frontend:
-~~~powershell
-npm run preview
-~~~
+Your UI should call the backend using `/api/...` so Vite can proxy to the backend during development.
+Update `client/vite.config.js` to point to whichever backend you want to use (8081 or 8082).
 
-## API Contract (expected)
+## Kafka Events page (SSE visualization)
+
+The backend exposes an SSE endpoint:
+
+- `GET /api/events/stream`
+
+There is also a static page in Spring Boot static resources:
+
+- `http://localhost:8081/kafka-events.html`
+- `http://localhost:8082/kafka-events.html`
+
+Suggested demo:
+
+1. Open `kafka-events.html` on both ports (two browser tabs)
+2. Perform CRUD via Swagger UI or the React UI on one server
+3. Watch the other server’s tab receive live events
+
+## API endpoints
+
 - `GET /api/users` — list users
 - `POST /api/users` — create user
+- `GET /api/users/{id}` — get user
 - `PUT /api/users/{id}` — update user
 - `DELETE /api/users/{id}` — delete user
 
-## Common Issues
-- Port in use:
-    - Change `server.port` or `VITE_DEV_PORT`.
-- CORS:
-    - Use the Vite proxy (`/api`) during dev; for direct cross‑origin access, configure Spring CORS.
-- Env not loaded:
-    - Vite reads only `VITE_*` vars; ensure they are in `client/.env.*`.
+## CORS (why it exists here)
 
-## Scripts Summary
-- Backend: `gradlew bootRun`, `gradlew build`
-- Frontend: in `client` — `npm run dev`, `npm run build`, `npm run preview`
+When you run multiple ports (8081, 8082, 5173, 5174), the browser treats them as different origins.
+`CorsConfig` allows those origins to call `/api/**` so you can:
 
-## Notes
-- Keep the screenshot at `Images/React_UI.png` or adjust the image path above.
-- In production, host the built frontend from any static server or integrate it into Spring Boot if desired.
+- use Swagger UI on 8081 to call APIs on 8082 (and vice versa)
+- use the React dev server on 5173/5174 to call either backend
+
+## Testing the Kafka demo (PowerShell examples)
+
+Create user on 8081:
+
+```powershell
+$response = Invoke-RestMethod -Uri http://localhost:8081/api/users -Method Post -Headers @{"Content-Type"="application/json"} -Body '{"name":"John Doe","email":"john@example.com"}'
+$response
+```
+
+Update on 8082:
+
+```powershell
+$userId = $response.id
+Invoke-RestMethod -Uri "http://localhost:8082/api/users/$userId" -Method Put -Headers @{"Content-Type"="application/json"} -Body '{"name":"Jane Doe","email":"jane@example.com"}'
+```
+
+Delete on 8081:
+
+```powershell
+Invoke-RestMethod -Uri "http://localhost:8081/api/users/$userId" -Method Delete
+```
+
+## Troubleshooting
+
+- Kafka not running: ensure `docker-compose up -d` is up and `localhost:9092` is reachable.
+- Ports already in use: change `server.port` or stop the other process.
+- CORS errors: ensure you’re calling `/api/**` and the origin you’re using is listed in `CorsConfig`.
