@@ -19,14 +19,13 @@ A full-stack CRUD application with:
 
 ### Kafka Demo
 
-![Kafka Demo 1](Images/Kafka1.png)
 ![Kafka Demo 2](Images/Kafka2.png)
 ![Kafka Demo 3](Images/Kafka3.png)
 ![Kafka Demo 4](Images/Kafka4.png)
 
 ### Docker
 
-![Docker](Images/Docker.png)
+![Docker](Images/Kafka1.png)
 
 ## What this project demonstrates
 
