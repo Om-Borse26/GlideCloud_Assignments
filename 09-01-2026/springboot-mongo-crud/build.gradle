@@ -1,0 +1,49 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.1'
+    id 'io.spring.dependency-management' version '1.1.4'
+}
+
+group = 'com.glideclouds'
+version = '0.0.1-SNAPSHOT'
+description = 'springboot-mongo-crud'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    // Web (controllers, REST, MockMvc)
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // MongoDB
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Dev tools
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    // ✅ TESTING (THIS FIXES YOUR ERRORS)
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // Swagger/OpenAPI Documentation
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+    
+    // Kafka Dependencies
+    implementation 'org.springframework.kafka:spring-kafka'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

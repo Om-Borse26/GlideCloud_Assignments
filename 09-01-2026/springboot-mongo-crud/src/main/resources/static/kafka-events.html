@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kafka Cross-Server Events</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 20px; background: #0f172a; color: #e5e7eb; }
+    h1 { margin-bottom: 0; }
+    .subtitle { color: #9ca3af; margin-bottom: 16px; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; margin-left: 8px; background: #1f2937; }
+    .events { margin-top: 16px; max-height: 60vh; overflow-y: auto; border: 1px solid #1f2937; border-radius: 8px; padding: 12px; background: #020617; }
+    .event { padding: 8px 10px; border-bottom: 1px solid #111827; }
+    .event:last-child { border-bottom: none; }
+    .event-type { font-weight: 600; margin-right: 8px; }
+    .event-type.created { color: #22c55e; }
+    .event-type.updated { color: #eab308; }
+    .event-type.deleted { color: #f97316; }
+    .meta { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+  </style>
+</head>
+<body>
+  <h1>Kafka Cross-Server Events
+    <span class="badge">This tab: <span id="server-port"></span></span>
+  </h1>
+  <div class="subtitle">
+    Open <code>kafka-events.html</code> on both <b>8081</b> and <b>8082</b>.  
+    Do CRUD via Swagger or your React UI, and watch remote events appear live here.
+  </div>
+
+  <div class="events" id="events"></div>
+
+  <script>
+    const port = window.location.port || 'unknown';
+    document.getElementById('server-port').textContent = port;
+
+    const eventsDiv = document.getElementById('events');
+
+    function addEventRow(type, payload) {
+      const div = document.createElement('div');
+      div.className = 'event';
+
+      const typeSpan = document.createElement('span');
+      typeSpan.className = 'event-type ' + type;
+      typeSpan.textContent = type.toUpperCase();
+
+      const text = document.createElement('span');
+      text.textContent = ` UserId=${payload.userId} | Name=${payload.name || ''} | Email=${payload.email || ''}`;
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.textContent = `From server ${payload.serverPort} at ${new Date(payload.timestamp).toLocaleString()}`;
+
+      div.appendChild(typeSpan);
+      div.appendChild(text);
+      div.appendChild(meta);
+
+      // prepend latest on top
+      eventsDiv.insertBefore(div, eventsDiv.firstChild);
+    }
+
+    const es = new EventSource('/api/events/stream');
+
+    es.addEventListener('user-created', e => {
+      const data = JSON.parse(e.data);
+      addEventRow('created', data);
+    });
+
+    es.addEventListener('user-updated', e => {
+      const data = JSON.parse(e.data);
+      addEventRow('updated', data);
+    });
+
+    es.addEventListener('user-deleted', e => {
+      const data = JSON.parse(e.data);
+      addEventRow('deleted', data);
+    });
+
+    es.onerror = () => {
+      console.warn('SSE connection error; server might be down or restarting');
+    };
+  </script>
+</body>
+</html>
